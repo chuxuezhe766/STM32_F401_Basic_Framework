@@ -1,1 +1,0 @@
-"mcuboot":"/home/kongchen/Project/Zephyr/bootloader/mcuboot":"/home/kongchen/Project/Zephyr/bootloader/mcuboot/boot/zephyr/sysbuild"
