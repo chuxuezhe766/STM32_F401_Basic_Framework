@@ -1,0 +1,2 @@
+# Load Sysbuild board Kconfig descriptions.
+osource "/home/kongchen/Project/STM32_F401_Basic_Framework/boards/others/stm32_f401_dev/Kconfig.sysbuild"

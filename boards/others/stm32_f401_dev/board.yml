@@ -1,0 +1,6 @@
+board:
+  name: stm32_f401_dev
+  full_name: stm32_f401_development_board
+  vendor: others
+  socs:
+    - name: stm32f401xe

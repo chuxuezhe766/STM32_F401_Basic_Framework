@@ -1,0 +1,81 @@
+/dts-v1/;
+
+#include <st/f4/stm32f401Xe.dtsi>
+#include <st/f4/stm32f401r(d-e)tx-pinctrl.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+    model = "STM32_f401_dev board";
+    compatible = "st,stm32_f401_dev";
+
+    chosen {
+        zephyr,console = &usart1;
+        zephyr,shell-uart = &usart1;
+        zephyr,sram = &sram0;
+        zephyr,flash = &flash0;
+    };
+
+    aliases {
+        led0 = &user_led;
+        sw0 = &user_button0;
+        sw1 = &user_button1;
+    };
+
+    leds {
+        compatible = "gpio-leds";
+
+        user_led: led-1 {
+            gpios = <&gpioc 13 GPIO_ACTIVE_LOW>;
+            label = "LD";
+        };
+    };
+
+    gpio_keys {
+        compatible = "gpio-keys";
+
+        user_button0: button-1 {
+            gpios = <&gpioc 0 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_KEY_0>;
+            label = "KEY0";
+        };
+
+        user_button1: button-2 {
+            gpios = <&gpioc 1 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_KEY_1>;
+            label = "KEY1";
+        };
+    };
+};
+
+&clk_lsi {
+    status = "okay";
+};
+
+&clk_hse {
+    clock-frequency = <DT_FREQ_M(25)>; /* 25MHz passive crystal */
+    status = "okay";
+};
+
+&pll {
+    div-m = <25>;
+    mul-n = <336>;
+    div-p = <4>;
+    div-q = <7>;
+    clocks = <&clk_hse>;
+    status = "okay";
+};
+
+&rcc {
+    clocks = <&pll>;
+    clock-frequency = <DT_FREQ_M(84)>;
+    ahb-prescaler = <1>;
+    apb1-prescaler = <2>;
+    apb2-prescaler = <1>;
+};
+
+&usart1 {
+    pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    status = "okay";
+};

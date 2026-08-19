@@ -1,0 +1,59 @@
+cmake:
+  application:
+    configuration-dir: '/home/kongchen/Project/STM32_F401_Basic_Framework/app'
+    source-dir: '/home/kongchen/Project/STM32_F401_Basic_Framework/app'
+  board:
+    name: 'stm32_f401_dev'
+    path:
+     - '/home/kongchen/Project/STM32_F401_Basic_Framework/boards/others/stm32_f401_dev'
+    qualifiers: 'stm32f401xe'
+    revision: ''
+  devicetree:
+    bindings-dirs:
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/bindings'
+    files:
+     - '/home/kongchen/Project/STM32_F401_Basic_Framework/boards/others/stm32_f401_dev/stm32_f401_dev.dts'
+    include-dirs:
+     - '/home/kongchen/Project/Zephyr/modules/hal/ambiq/dts'
+     - '/home/kongchen/Project/Zephyr/modules/hal/atmel/include'
+     - '/home/kongchen/Project/Zephyr/modules/hal/bouffalolab/include'
+     - '/home/kongchen/Project/Zephyr/modules/hal/bouffalolab/include/zephyr'
+     - '/home/kongchen/Project/Zephyr/modules/hal/gigadevice/include'
+     - '/home/kongchen/Project/Zephyr/modules/hal/infineon/dts'
+     - '/home/kongchen/Project/Zephyr/modules/hal/microchip/include'
+     - '/home/kongchen/Project/Zephyr/modules/hal/microchip/dts'
+     - '/home/kongchen/Project/Zephyr/modules/hal/nuvoton/dts'
+     - '/home/kongchen/Project/Zephyr/modules/hal/nxp/dts'
+     - '/home/kongchen/Project/Zephyr/modules/hal/stm32/dts'
+     - '/home/kongchen/Project/Zephyr/modules/hal/ti/dts'
+     - '/home/kongchen/Project/Zephyr/zephyr/include'
+     - '/home/kongchen/Project/Zephyr/zephyr/include/zephyr'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/common'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/vendor'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/rx'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/x86'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/xtensa'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/sparc'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/riscv'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/posix'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/arm64'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/arm'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts/arc'
+     - '/home/kongchen/Project/Zephyr/zephyr/dts'
+  kconfig:
+    files:
+     - '/home/kongchen/Project/STM32_F401_Basic_Framework/boards/others/stm32_f401_dev/stm32_f401_dev_defconfig'
+     - '/home/kongchen/Project/STM32_F401_Basic_Framework/app/prj.conf'
+    user-files:
+     - '/home/kongchen/Project/STM32_F401_Basic_Framework/app/prj.conf'
+  toolchain:
+    name: 'zephyr'
+    path: '/home/kongchen/Project/Zephyr/zephyr-sdk'
+  zephyr:
+    version: '4.4.99'
+    zephyr-base: '/home/kongchen/Project/Zephyr/zephyr'
+version: '0.1.0'
+west:
+  command: '/home/kongchen/Project/Zephyr/.venv/bin/west build -b stm32_f401_dev /home/kongchen/Project/STM32_F401_Basic_Framework/app -d /home/kongchen/Project/STM32_F401_Basic_Framework/app/build -- -DBOARD_ROOT=/home/kongchen/Project/STM32_F401_Basic_Framework'
+  topdir: '/home/kongchen/Project/Zephyr'
+  version: '1.5.0'
