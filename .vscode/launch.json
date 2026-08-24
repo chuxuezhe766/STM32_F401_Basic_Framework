@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "STM32F103: 构建+烧录+调试",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "serverpath": "/usr/bin/openocd",
+            "gdbPath": "/home/kongchen/Project/Zephyr/zephyr-sdk/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+            "executable": "${workspaceFolder}/build/zephyr/zephyr.elf",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "svdFile": "/home/kongchen/Project/stm32_svd/en.stm32f1_svd/STM32F1_svd_V1.2/STM32F103.svd",
+            "rtos": "Zephyr",
+            "runToEntryPoint": "main",
+            "preLaunchTask": "west build",
+            "showDevDebugOutput": "raw"
+        },
+        {
+            "name": "STM32F103: 调试（不重新构建）",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "serverpath": "/usr/bin/openocd",
+            "gdbPath": "/home/kongchen/Project/Zephyr/zephyr-sdk/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+            "executable": "${workspaceFolder}/build/zephyr/zephyr.elf",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "svdFile": "/home/kongchen/Project/stm32_svd/en.stm32f1_svd/STM32F1_svd_V1.2/STM32F103.svd",
+            "rtos": "Zephyr",
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "raw"
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+# Create a new option in menuconfig
+config CUSTOM_WS2812
+    bool "Custom ws2812"
+    default n       # Set the driver to be disabled by default
+    depends on PWM # Make it dependent on PWM driver
+    depends on DMA # Make it dependent on DMA driver
+    help 
+        Enable the custom ws2812 driver.

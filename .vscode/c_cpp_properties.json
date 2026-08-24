@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "Zephyr",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "intelliSenseMode": "gcc-arm",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

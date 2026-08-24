@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Custom WS2812 LED strip driven by PWM + DMA.
+
+compatible: "custom,ws2812"
+
+include: led-strip.yaml
+
+properties:
+  pwms:
+    type: phandle-array
+    required: true
+
+  dmas:
+    type: phandle-array
+    required: true
+
+  dma-names:
+    type: string-array
+    required: true
+
+  reset-delay:
+    type: int
+    default: 80
