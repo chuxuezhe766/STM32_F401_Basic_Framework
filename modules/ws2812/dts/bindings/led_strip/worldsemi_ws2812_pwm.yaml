@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  WS2812 LED strip driven by PWM + DMA (Worldsemi WS2812 PWM driver).
+
+compatible: "worldsemi_ws2812_pwm"
+
+include: led-strip.yaml
+
+properties:
+  pwms:
+    type: phandle-array
+    required: true
+
+  dmas:
+    type: phandle-array
+    required: true
+
+  dma-names:
+    type: string-array
+    required: true
+
+  zero-pulse-ns:
+    type: int
+    required: true
+    description: |
+      Zero-bit high pulse width in nanoseconds.
+
+  one-pulse-ns:
+    type: int
+    required: true
+    description: |
+      One-bit high pulse width in nanoseconds.
+
+  reset-delay:
+    type: int
+    default: 80
+    description: |
+      Reset low time in microseconds.

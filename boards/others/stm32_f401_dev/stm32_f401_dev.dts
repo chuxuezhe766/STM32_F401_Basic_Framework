@@ -52,12 +52,15 @@
         compatible = "led-strip-container";
         
         user_ws2812_1: ws2812_1 {
-            compatible = "custom,ws2812";
-            pwms = <&pwm5 3 PWM_MSEC(1250) PWM_POLARITY_NORMAL>;
+            compatible = "worldsemi_ws2812_pwm";
+            pwms = <&pwm5 3 1250 PWM_POLARITY_NORMAL>;
             dmas = <&dma1 0 6 STM32_DMA_PERIPH_TX STM32_DMA_16BITS>;
-            dma-names = "tx";
+            dma-names = "update";
             chain-length = <1>;
             color-mapping = <LED_COLOR_ID_GREEN LED_COLOR_ID_RED LED_COLOR_ID_BLUE>;
+            zero-pulse-ns = <420>;
+            one-pulse-ns = <830>;
+            reset-delay = <80>;
         };
     };
 };

@@ -12,6 +12,7 @@ project(stm32_f401_basic_framework)
 target_sources(app PRIVATE
     src/main.c
     ../modules/ws2812/drivers/ws2812/ws2812.c
+    ../modules/ws2812/drivers/ws2812/ws2812_pwm_stm32_dma_backend.c
 )
 
 target_include_directories(app PRIVATE

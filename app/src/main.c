@@ -55,8 +55,8 @@ int main(void)
     memset(pixels, 0, sizeof(pixels));
     /* 点亮第 0 颗为红色 */
     pixels[0].r = 0;
-    pixels[0].g = 22;
-    pixels[0].b = 0;
+    pixels[0].g = 0;
+    pixels[0].b = 25;
 
     uint8_t font_width;
     uint8_t font_height;
