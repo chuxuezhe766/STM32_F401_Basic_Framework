@@ -6,6 +6,7 @@
 #include <zephyr/drivers/display.h>
 #include <zephyr/display/cfb.h>
 #include "ws2812.h"
+#include "w25q128.h"
 
 #define DISPLAY_NODE DT_CHOSEN(zephyr_display)
 
@@ -17,6 +18,7 @@ int main(void)
 {
     const struct device *display = DEVICE_DT_GET(DISPLAY_NODE);
     const struct device *strip = DEVICE_DT_GET(DT_NODELABEL(user_ws2812_1));
+    const struct device *flash = DEVICE_DT_GET(DT_NODELABEL(w25q128));
 
     int ret;
     int state = 0;
@@ -39,6 +41,30 @@ int main(void)
         return 0;
     }
 
+    if (!device_is_ready(flash)) {
+      printk("W25Q128 init failed\r\n");
+      return 0;
+    }
+
+    // W25Q128 读写测试:写入一段文字,再读回打印
+    static const char flash_msg[] = "Hello W25Q128! This text was written via SPI.";
+    uint8_t flash_read_buf[64];
+
+    memset(flash_read_buf, 0, sizeof(flash_read_buf));
+    ret = flash_write(flash, 0x000000, (uint8_t *)flash_msg, strlen(flash_msg) + 1);
+    if (ret < 0) {
+        printk("W25Q128 write failed: %d\r\n", ret);
+        return 0;
+    }
+
+    ret = flash_read(flash, 0x000000, flash_read_buf, sizeof(flash_read_buf) - 1);
+    if (ret < 0) {
+        printk("W25Q128 read failed: %d\r\n", ret);
+        return 0;
+    }
+    flash_read_buf[sizeof(flash_read_buf) - 1] = '\0'; // 保证字符串结尾
+    printk("W25Q128 read back: %s\r\n", flash_read_buf);
+
     // Set the GPIO as output
     ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT);
     if (ret < 0) {
@@ -56,7 +82,7 @@ int main(void)
     /* 点亮第 0 颗为红色 */
     pixels[0].r = 0;
     pixels[0].g = 0;
-    pixels[0].b = 25;
+    pixels[0].b = 20;
 
     uint8_t font_width;
     uint8_t font_height;

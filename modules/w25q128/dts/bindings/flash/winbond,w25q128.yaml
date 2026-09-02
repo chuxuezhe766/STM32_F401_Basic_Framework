@@ -1,0 +1,11 @@
+description: |
+  Winbond W25Q128 SPI NOR Flash (128Mbit), driven by SPI
+compatible: "winbond,w25q128"
+
+include: spi-device.yaml
+
+properties:
+  size:
+    type: int
+    description: |
+      Flash capacity in bits. 128 Mbit = 0x8000000.

@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.20.0)
 list(APPEND DTS_ROOT
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${CMAKE_CURRENT_SOURCE_DIR}/../modules/ws2812
+    ${CMAKE_CURRENT_SOURCE_DIR}/../modules/w25q128
 )
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
@@ -13,8 +14,10 @@ target_sources(app PRIVATE
     src/main.c
     ../modules/ws2812/drivers/ws2812/ws2812.c
     ../modules/ws2812/drivers/ws2812/ws2812_pwm_stm32_dma_backend.c
+    ../modules/w25q128/drivers/w25q128/w25q128.c
 )
 
 target_include_directories(app PRIVATE
     ../modules/ws2812/drivers/ws2812
+    ../modules/w25q128/drivers/w25q128
 )

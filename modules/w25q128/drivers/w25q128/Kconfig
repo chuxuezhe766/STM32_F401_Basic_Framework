@@ -1,0 +1,7 @@
+# Create a new option in menuconfig
+config WINBOND_W25Q128
+    bool "Winbond w25q128"
+    default n       # Set the driver to be disabled by default
+    depends on SPI  # Make it dependent on SPI driver
+    help 
+        Enable the Winbond w25q128 driver.

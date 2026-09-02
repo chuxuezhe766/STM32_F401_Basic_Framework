@@ -58,7 +58,7 @@ struct ws2812_pwm_data {
 };
 
 /* ------------------------------------------------------------------ */
-/* DMA backend hook                                                    */
+/* DMA backend hook                                                   */
 /* ------------------------------------------------------------------ */
 int ws2812_pwm_transmit(const struct device *dev,
 			const ws2812_pwm_slot_t *buf, size_t len);
