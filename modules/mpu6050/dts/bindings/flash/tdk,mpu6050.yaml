@@ -1,0 +1,11 @@
+description: |
+  TDK MPU6050, driven by I2C
+compatible: "tdk,mpu6050"
+
+include: i2c-device.yaml
+
+properties:
+  size:
+    type: int
+    description: |
+      mpu6050

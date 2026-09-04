@@ -1,0 +1,7 @@
+# Create a new option in menuconfig
+config TDK_MPU6050
+    bool "Tdk mpu6050"
+    default n       # Set the driver to be disabled by default
+    depends on I2C  # Make it dependent on i2c driver
+    help 
+        Enable the Tdk mpu6050 driver.

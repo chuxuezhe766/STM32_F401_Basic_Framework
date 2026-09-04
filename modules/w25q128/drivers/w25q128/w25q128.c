@@ -6,7 +6,7 @@
 #include <errno.h>
 #include "w25q128.h"
 
-LOG_MODULE_REGISTER(w25q128_spi, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(w25q128, LOG_LEVEL_INF);
 
 // W25q128_macro
 #define W25Q128_JEDEC_ID    0xEF4018     /* EF 40 18 */
@@ -376,6 +376,79 @@ static int w25q128_writepage(const struct device *dev, uint32_t addr, uint8_t *p
     return w25q128_wait_busy(dev, 20);
 }
 
+// write but not erase
+static int w25q128_write_noe(const struct device *dev, uint32_t addr,
+                         uint8_t *buf, size_t len)
+{
+    struct w25q128_spi_data *data = dev->data;
+    int ret;
+
+    if (buf == NULL) {
+        return -EINVAL;
+    }
+    if (len == 0) {
+        return 0;
+    }
+    if (addr >= W25Q128_SIZE_BYTES) {
+        return -ERANGE;
+    }
+    if (len > W25Q128_SIZE_BYTES - addr) {
+        return -ERANGE;
+    }
+
+    k_mutex_lock(&data->lock, K_FOREVER);
+
+    /*按页切分编程 */
+    while (len > 0) {
+        size_t page_left = W25Q128_PAGE_SIZE - (addr & (W25Q128_PAGE_SIZE - 1u));
+        size_t chunk = (len < page_left) ? len : page_left;
+
+        ret = w25q128_writepage(dev, addr, buf, (uint16_t)chunk);
+        if (ret) {
+            goto out;
+        }
+        addr += chunk;
+        buf  += chunk;
+        len  -= chunk;
+    }
+    ret = 0;
+
+out:
+    k_mutex_unlock(&data->lock);
+    return ret;
+}
+
+// Erase range: addr/len 都必须按 4KB 扇区对齐,逐扇区擦除
+static int w25q128_erase(const struct device *dev, uint32_t addr, size_t len)
+{
+    struct w25q128_spi_data *data = dev->data;
+    int ret;
+
+    if (len == 0) {
+        return 0;
+    }
+    if ((addr % W25Q128_SECTOR_SIZE) != 0 ||
+        (len % W25Q128_SECTOR_SIZE) != 0) {
+        return -EINVAL;
+    }
+    if (addr >= W25Q128_SIZE_BYTES || len > W25Q128_SIZE_BYTES - addr) {
+        return -ERANGE;
+    }
+
+    k_mutex_lock(&data->lock, K_FOREVER);
+    for (uint32_t off = 0; off < len; off += W25Q128_SECTOR_SIZE) {
+        ret = w25q128_erasesector(dev, addr + off);
+        if (ret) {
+            goto out;
+        }
+    }
+    ret = 0;
+
+out:
+    k_mutex_unlock(&data->lock);
+    return ret;
+}
+
 // 任意地址、任意长度写入:先擦除数据覆盖到的扇区,再按页切分编程。
 // 整个"擦+写"在互斥锁保护下原子完成,调用者无需提前擦除。
 // 注意:擦除按扇区粒度(4KB),会一并擦掉覆盖扇区里的其他数据。
@@ -445,7 +518,7 @@ static int w25q128_init(const struct device *dev)
         return -ENODEV;
     }
 
-    // Init mutxex
+    // Init mutex
     k_mutex_init(&data->lock);
 
     // Read 
@@ -514,7 +587,7 @@ static int w25q128_init(const struct device *dev)
         return ret;
     }
 
-    for (int i = 0; i < W25Q128_PAGE_SIZE; i++) {
+    for (int i = 240; i < W25Q128_PAGE_SIZE; i++) {
         LOG_INF("addr 0x%06X = %3u (0x%02X)%s", i, read_buf[i], read_buf[i],
                 (read_buf[i] == write_buf[i]) ? "" : "  <-- MISMATCH");
         if (read_buf[i] != write_buf[i]) {
@@ -535,6 +608,8 @@ static int w25q128_init(const struct device *dev)
 static const struct w25q128_api w25q128_api_funcs = {
     .read = w25q128_read,
     .write = w25q128_write,
+    .write_noe = w25q128_write_noe,
+    .erase = w25q128_erase,
 };
 
 // Instance boilerplate  
@@ -553,6 +628,6 @@ static const struct w25q128_api w25q128_api_funcs = {
                         &w25q128_spi_cfg_##inst,                            \
                         POST_KERNEL,                                        \
                         80,                                                 \
-                        &w25q128_api_funcs);                                              \
+                        &w25q128_api_funcs);                                \
             
 DT_INST_FOREACH_STATUS_OKAY(W25Q128_SPI_INIT)

@@ -50,7 +50,7 @@
 
     led_strip {
         compatible = "led-strip-container";
-        
+
         user_ws2812_1: ws2812_1 {
             compatible = "worldsemi_ws2812_pwm";
             pwms = <&pwm5 3 1250 PWM_POLARITY_NORMAL>;
@@ -61,6 +61,31 @@
             zero-pulse-ns = <420>;
             one-pulse-ns = <830>;
             reset-delay = <80>;
+        };
+    };
+
+    /* PWM 蜂鸣器:TIM9_CH2 -> PA3。
+     * pwms 的周期是文档性默认值(压电片的共振频率,驱动运行时会按请求的音调覆盖) */
+    buzzer: buzzer {
+        compatible = "pwm-buzzer";
+        pwms = <&pwm9 2 PWM_HZ(2700) PWM_POLARITY_NORMAL>;
+    };
+
+    /* 软件 I2C(bit-bang):F401 的 PB0/PB1 无硬件 I2C 复用,走 GPIO 位带。
+     * SDA/SCL 配成开漏 + 内部上拉;若 MPU6050 模块自带外部上拉则更好。 */
+    i2c_gpio_0: i2c_gpio_0 {
+        compatible = "gpio-i2c";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        scl-gpios = <&gpiob 0 (GPIO_OPEN_DRAIN | GPIO_PULL_UP)>;
+        sda-gpios = <&gpiob 1 (GPIO_OPEN_DRAIN | GPIO_PULL_UP)>;
+        clock-frequency = <100000>;     /* 100kHz */
+        status = "okay";
+
+        mpu6050: mpu6050@68 {
+            compatible = "tdk,mpu6050";
+            reg = <0x68>;     /* AD0 接 GND */
+            status = "okay";
         };
     };
 };
@@ -125,6 +150,16 @@
 	pwm5: pwm {
 		status = "okay";
 		pinctrl-0 = <&tim5_ch3_pa2>;
+		pinctrl-names = "default";
+	};
+};
+
+&timers9 {
+	status = "okay";
+
+	pwm9: pwm {
+		status = "okay";
+		pinctrl-0 = <&tim9_ch2_pa3>;
 		pinctrl-names = "default";
 	};
 };

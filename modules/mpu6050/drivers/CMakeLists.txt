@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_TDK_MPU6050 mpu6050)
