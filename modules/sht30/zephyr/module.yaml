@@ -1,0 +1,6 @@
+name: sht30
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .

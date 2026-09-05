@@ -115,7 +115,6 @@ static int w25q128_read_chip_id(const struct device *dev, uint16_t *id)
 static int w25q128_read_state(const struct device *dev, uint8_t *state)
 {
     const struct w25q128_spi_config *cfg = dev->config;
-    struct w25q128_spi_data *data = dev->data;
     uint8_t tx[2] = {CMD_READ_STATE, 0};
     uint8_t rx[2] = {0};
     int ret;
@@ -522,9 +521,9 @@ static int w25q128_init(const struct device *dev)
     k_mutex_init(&data->lock);
 
     // Read 
-    uint32_t jedec_id;
-    uint8_t state;
-    uint16_t chip_id;
+    uint32_t jedec_id = 0;
+    uint8_t state = 0;
+    uint16_t chip_id = 0;
     ret = w25q128_read_jedec_id(dev, &jedec_id);
     if (ret < 0) {
         LOG_ERR("ret jedec id failed: %d", ret);
@@ -617,7 +616,7 @@ static const struct w25q128_api w25q128_api_funcs = {
 #define W25Q128_SPI_INIT(inst)                                              \
     static const struct w25q128_spi_config w25q128_spi_cfg_##inst = {       \
         .spi = SPI_DT_SPEC_INST_GET(inst,                                   \
-                SPI_WORD_SET(8) | SPI_OP_MODE_MASTER, 0),                   \
+                SPI_WORD_SET(8) | SPI_OP_MODE_MASTER),                      \
     };                                                                      \
     static struct w25q128_spi_data w25q128_spi_data_##inst;                 \
                                                                             \

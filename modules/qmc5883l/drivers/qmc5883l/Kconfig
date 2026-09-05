@@ -1,0 +1,7 @@
+# Create a new option in menuconfig
+config QST_QMC5883L
+    bool "Qst qmc5883l"
+    default n       # Set the driver to be disabled by default
+    depends on I2C  # Make it dependent on i2c driver
+    help 
+        Enable the Qst qmc5883l driver.

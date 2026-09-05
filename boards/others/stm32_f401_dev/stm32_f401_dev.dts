@@ -144,6 +144,27 @@
     };
 };
 
+/* 硬件 I2C2:SCL=PB10(AF4), SDA=PB3(AF9)。
+ * 注意 PB3 复位态是 JTDO/SWO 调试引脚,复用为 I2C 后 SWO 不可用,
+ * SWD 下载/调试(PA13/PA14)不受影响。 */
+&i2c2 {
+    pinctrl-0 = <&i2c2_scl_pb10 &i2c2_sda_pb3>;
+    pinctrl-names = "default";
+    status = "okay";
+
+    qmc5883l: qmc5883l@0d {
+        compatible = "qst,qmc5883l";
+        reg = <0x0d>;     /* QMC5883L 固定 7 位地址 0x0D */
+        status = "okay";
+    };
+
+    sht30: sht30@44 {
+        compatible = "sensirion,sht30";
+        reg = <0x44>;
+        status = "okay";
+    };
+};
+
 &timers5 {
 	status = "okay";
 

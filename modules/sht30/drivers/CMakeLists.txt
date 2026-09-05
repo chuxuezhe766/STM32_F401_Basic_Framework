@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_SENSIRION_SHT30 sht30)

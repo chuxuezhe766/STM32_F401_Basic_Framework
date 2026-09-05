@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_QST_QMC5883L qmc5883l)

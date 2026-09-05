@@ -1,0 +1,5 @@
+description: |
+  Sensirion SHT30 digital temperature and humidity sensor, driven by I2C
+compatible: "sensirion,sht30"
+
+include: i2c-device.yaml

@@ -1,0 +1,5 @@
+description: |
+  QST QMC5883L 3-axis magnetometer, driven by I2C
+compatible: "qst,qmc5883l"
+
+include: i2c-device.yaml

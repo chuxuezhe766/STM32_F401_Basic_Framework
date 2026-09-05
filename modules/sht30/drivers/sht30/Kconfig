@@ -1,0 +1,7 @@
+# Create a new option in menuconfig
+config SENSIRION_SHT30
+    bool "Sensirion sht30"
+    default n       # Set the driver to be disabled by default
+    depends on I2C  # Make it dependent on i2c driver
+    help
+        Enable the Sensirion sht30 driver.
