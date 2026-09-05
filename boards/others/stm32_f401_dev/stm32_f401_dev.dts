@@ -163,6 +163,12 @@
         reg = <0x44>;
         status = "okay";
     };
+
+    bmp280: bmp280@76 {
+        compatible = "bosch,bmp280";
+        reg = <0x76>;     /* SDO 接 GND 为 0x76,接 VDDIO 为 0x77 */
+        status = "okay";
+    };
 };
 
 &timers5 {

@@ -14,6 +14,7 @@ list(APPEND DTS_ROOT
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/mpu6050
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/qmc5883l
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/sht30
+    ${CMAKE_CURRENT_SOURCE_DIR}/modules/bmp280
 )
 
 # 本项目不在 west 工作区里,Zephyr 无法通过 west 清单自动发现本地模块,
@@ -24,6 +25,7 @@ set(ZEPHYR_EXTRA_MODULES
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/mpu6050
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/qmc5883l
     ${CMAKE_CURRENT_SOURCE_DIR}/modules/sht30
+    ${CMAKE_CURRENT_SOURCE_DIR}/modules/bmp280
 )
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})

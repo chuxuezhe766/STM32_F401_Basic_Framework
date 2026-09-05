@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_BOSCH_BMP280 bmp280)

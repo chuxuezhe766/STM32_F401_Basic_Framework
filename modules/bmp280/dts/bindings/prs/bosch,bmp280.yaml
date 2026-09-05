@@ -1,0 +1,5 @@
+description: |
+  Bosch BMP280 digital barometric pressure and temperature sensor, driven by I2C
+compatible: "bosch,bmp280"
+
+include: i2c-device.yaml

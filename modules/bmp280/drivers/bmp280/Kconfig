@@ -1,0 +1,7 @@
+# Create a new option in menuconfig
+config BOSCH_BMP280
+    bool "Bosch bmp280"
+    default n       # Set the driver to be disabled by default
+    depends on I2C  # Make it dependent on i2c driver
+    help
+        Enable the Bosch bmp280 driver.
