@@ -1,0 +1,6 @@
+name: kt6368a
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .

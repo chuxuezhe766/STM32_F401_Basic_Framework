@@ -19,7 +19,7 @@ int flash_log_init(const struct device *dev);
 /* 追加一条日志,text 超过 FLASH_LOG_MAX_LEN 时返回 -EINVAL */
 int flash_log_append(const struct device *dev, const char *text);
 
-/* 把日志区里的所有历史记录打印出来 */
+/* 把日志区里的历史记录打印出来(每次最多打最新的 5 条) */
 int flash_log_dump(const struct device *dev);
 
 #endif

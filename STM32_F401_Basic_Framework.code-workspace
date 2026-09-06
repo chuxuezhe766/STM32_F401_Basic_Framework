@@ -4,5 +4,24 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cmake.configureOnOpen": false,
+		"terminal.integrated.env.linux": {
+			"PATH": "/home/kongchen/Project/Zephyr/.venv/bin:${env:PATH}",
+			"ZEPHYR_BASE": "/home/kongchen/Project/Zephyr/zephyr"
+		},
+		"VsCodeTaskButtons.showCounter": true,
+		"VsCodeTaskButtons.tasks": [
+			{
+				"label": "$(tools) Build",
+				"task": "west build",
+				"tooltip": "west build -d build (incremental)"
+			},
+			{
+				"label": "$(zap) West Flash",
+				"task": "west flash",
+				"tooltip": "west flash -d build"
+			}
+		]
+	}
 }

@@ -1,0 +1,15 @@
+{
+    "VsCodeTaskButtons.showCounter": true,
+    "VsCodeTaskButtons.tasks": [
+        {
+            "label": "$(tools) Build",
+            "task": "west build",
+            "tooltip": "west build -d build (incremental)"
+        },
+        {
+            "label": "$(zap) West Flash",
+            "task": "west flash",
+            "tooltip": "west flash -d build"
+        }
+    ]
+}

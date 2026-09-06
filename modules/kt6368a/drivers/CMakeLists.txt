@@ -1,0 +1,1 @@
+add_subdirectory_ifdef(CONFIG_QINYUE_KT6368A kt6368a)

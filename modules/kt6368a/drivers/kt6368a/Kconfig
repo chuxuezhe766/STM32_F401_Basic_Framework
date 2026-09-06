@@ -1,0 +1,10 @@
+# Create a new option in menuconfig
+config QINYUE_KT6368A
+    bool "Qinyue kt6368a"
+    default n        # Set the driver to be disabled by default
+    depends on SERIAL  # Make it dependent on the uart driver
+    # RX is interrupt-driven (uart irq + ring buffer), the polled
+    # uart irq api is only compiled with this on
+    select UART_INTERRUPT_DRIVEN
+    help
+        Enable the Qinyue kt6368a bluetooth driver.

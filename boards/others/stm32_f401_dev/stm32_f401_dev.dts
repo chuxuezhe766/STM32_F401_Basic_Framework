@@ -123,6 +123,44 @@
     status = "okay";
 };
 
+/* 硬件 USART6:MCU TX=PC6(AF8) -> 模块 RXD,MCU RX=PC7(AF8) <- 模块 TXD。
+ * 注意方向:模块的 TX 脚接 MCU 的 RX 脚。115200 8N1 是 KT6368A 出厂默认。 */
+&usart6 {
+    pinctrl-0 = <&usart6_tx_pc6 &usart6_rx_pc7>;
+    pinctrl-names = "default";
+    current-speed = <115200>;
+    status = "okay";
+
+    kt6368a: kt6368a {
+        compatible = "qinyue,kt6368a";
+        status = "okay";
+        /* 模块 STA 状态脚 -> PC5:已连接输出高电平,未连接为低电平(实测)。
+         * 厂商资料称部分批次未连接时以 10Hz 脉冲输出,肉眼不可辨。 */
+        sta-gpios = <&gpioc 5 GPIO_ACTIVE_HIGH>;
+    };
+};
+
+/* SD 卡:SDIO 4-bit 总线,D0=PC8 D1=PC9 D2=PC10 D3=PC11 CK=PC12 CMD=PD2,
+ * 全部 AF12,pinctrl 节点在 stm32f401r(d-e)tx-pinctrl.dtsi 里现成提供
+ * (含上拉和 very-high-speed)。SDIO 内核时钟取自 PLL_Q,当前时钟树
+ * (HSE 25MHz,M=25,N=336,Q=7 -> VCO 336MHz)下 PLL_Q 恰为 48MHz,
+ * 满足驱动的 48MHz 检查,无需改时钟配置。F401 无卡检测引脚,未接
+ * cd-gpios,卡未插时挂载会失败。 */
+&sdmmc1 {
+    status = "okay";
+    pinctrl-0 = <&sdio_d0_pc8 &sdio_d1_pc9 &sdio_d2_pc10
+                 &sdio_d3_pc11 &sdio_ck_pc12 &sdio_cmd_pd2>;
+    pinctrl-names = "default";
+    bus-width = <4>;
+    disk-name = "SD";
+    /* 传输阶段总线时钟 = 48MHz/(clk-div+2) = 24MHz(分母最小为 2,已是
+     * 硬件上限;clk-bypass 可到 48MHz,但默认速度模式卡规范上限 25MHz,
+     * 且本驱动不做 CMD6 高速模式切换,超规不可用)。贴 25MHz 上限跑,
+     * 飞线若出现 sd read/write error(CRC)则退回 3(≈9.6MHz)。
+     * 注意识别阶段(CMD0)固定 400kHz,不受此属性影响。 */
+    clk-div = <0>;
+};
+
 &i2c1 {
     pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
     pinctrl-names = "default";

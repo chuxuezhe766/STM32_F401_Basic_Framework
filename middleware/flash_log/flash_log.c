@@ -99,6 +99,10 @@ int flash_log_append(const struct device *dev, const char *text)
     return 0;
 }
 
+/* 转储一次最多打印的记录数(最新的几条),
+ * 记录多了全量打印会淹没日志缓冲 */
+#define DUMP_MAX_RECORDS 5u
+
 int flash_log_dump(const struct device *dev)
 {
     uint8_t payload[FLASH_LOG_MAX_LEN + 1];
@@ -122,10 +126,14 @@ int flash_log_dump(const struct device *dev)
             return ret;
         }
         payload[hdr[1]] = '\0';
-        printk("[%3u] %s\r\n", idx, payload);
+        /* 只打印最新的 DUMP_MAX_RECORDS 条,总数照常统计 */
+        if (idx + DUMP_MAX_RECORDS >= record_count) {
+            printk("[%3u] %s\r\n", idx, payload);
+        }
         addr += LOG_HDR_SIZE + hdr[1];
         idx++;
     }
-    printk("---- end of dump: %u records ----\r\n", idx);
+    printk("---- end of dump: %u records (last %u shown) ----\r\n",
+           idx, idx < DUMP_MAX_RECORDS ? idx : DUMP_MAX_RECORDS);
     return 0;
 }

@@ -1,0 +1,18 @@
+description: |
+  Qinyue KT6368A dual-mode (BLE + SPP) bluetooth chip, driven by UART.
+  Default serial settings are 115200 baud, 8N1, no flow control - they
+  must match the chip or the AT commands get no reply.
+compatible: "qinyue,kt6368a"
+
+include: uart-device.yaml
+
+properties:
+  sta-gpios:
+    type: phandle-array
+    required: false
+    description: |
+      GPIO connected to the module STA status pin: high = a bluetooth
+      peer is connected, low = not connected. Vendor docs mention some
+      module batches pulse ~10Hz on this pin while unconnected, but
+      measured units just hold it low.
+

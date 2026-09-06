@@ -26,6 +26,11 @@ struct bmp280_api {
                     float *temp_c);
     /* Soft reset, all registers back to default, ~2ms */
     int (*reset)(const struct device *dev);
+    /* Single-point calibration: adds offset_pa to every pressure
+     * reading. Counterfeit BMP280s read a constant ~10kPa high, so
+     * calibrate once against a local reference and it becomes a
+     * usable barometer. */
+    int (*set_offset)(const struct device *dev, float offset_pa);
 };
 
 static inline int baro_get_all(const struct device *dev,
@@ -45,6 +50,15 @@ static inline int baro_reset(const struct device *dev)
         return -ENOSYS;
     }
     return api->reset(dev);
+}
+
+static inline int baro_set_offset(const struct device *dev, float offset_pa)
+{
+    const struct bmp280_api *api = dev->api;
+    if (api == NULL || api->set_offset == NULL) {
+        return -ENOSYS;
+    }
+    return api->set_offset(dev, offset_pa);
 }
 
 #endif

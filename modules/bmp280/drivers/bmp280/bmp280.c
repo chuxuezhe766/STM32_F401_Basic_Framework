@@ -72,6 +72,12 @@ struct bmp280_i2c_data {
     /* Fine temperature, shared between the temp and pressure
      * compensation formulas (datasheet 3.11.3) */
     float t_fine;
+    /* Single-point pressure offset in Pa, applied after the
+     * compensation. Counterfeit chips (see the exact-match check
+     * against the datasheet example values in the calib) are not
+     * factory trimmed, their absolute pressure is off by a constant
+     * ~10kPa while the repeatability stays good. */
+    float press_offset_pa;
     uint8_t id;
 };
 
@@ -249,7 +255,8 @@ static int bmp280_read_all(const struct device *dev, float *press_pa,
                           ((uint32_t)buf[4] << 4) |
                           ((uint32_t)buf[5] >> 4));
         *temp_c = bmp280_compensate_temp(data, adc_T);
-        *press_pa = bmp280_compensate_press(data, adc_P);
+        *press_pa = bmp280_compensate_press(data, adc_P)
+                    + data->press_offset_pa;
     }
 
     k_mutex_unlock(&data->lock);
@@ -318,10 +325,19 @@ static int bmp280_init(const struct device *dev)
     return 0;
 }
 
+static int bmp280_set_offset(const struct device *dev, float offset_pa)
+{
+    struct bmp280_i2c_data *data = dev->data;
+
+    data->press_offset_pa = offset_pa;
+    return 0;
+}
+
 // Define the public API functions for the driver
 static const struct bmp280_api bmp280_api_funcs = {
     .read_all = bmp280_read_all,
     .reset = bmp280_reset,
+    .set_offset = bmp280_set_offset,
 };
 
 // Instance boilerplate

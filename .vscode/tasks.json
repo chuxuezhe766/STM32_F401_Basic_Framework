@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "west build",
+            "type": "shell",
+            "command": "west build -d build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "west build pristine",
+            "type": "shell",
+            "command": "west build -p always -b stm32_f401_dev .",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "west flash",
+            "type": "shell",
+            "command": "west flash -d ~/Project/STM32_F401_Basic_Framework/build",
+            "problemMatcher": []
+        },
+    ]
+}

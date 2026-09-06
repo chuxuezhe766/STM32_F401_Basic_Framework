@@ -6,11 +6,15 @@
 #include <zephyr/drivers/display.h>
 #include <zephyr/drivers/buzzer.h>
 #include <zephyr/display/cfb.h>
+#include <zephyr/fs/fs.h>
+#include <ff.h>
 #include "ws2812.h"
 #include "w25q128.h"
 #include "mpu6050.h"
 #include "qmc5883l.h"
 #include "sht30.h"
+#include "bmp280.h"
+#include "kt6368a.h"
 #include "attitude.h"
 #include "flash_log.h"
 
@@ -52,6 +56,8 @@ int main(void)
     const struct device *gyro_dev = DEVICE_DT_GET(DT_NODELABEL(mpu6050));
     const struct device *mag_dev = DEVICE_DT_GET(DT_NODELABEL(qmc5883l));
     const struct device *trh_dev = DEVICE_DT_GET(DT_NODELABEL(sht30));
+    const struct device *baro_dev = DEVICE_DT_GET(DT_NODELABEL(bmp280));
+    const struct device *bt_dev = DEVICE_DT_GET(DT_NODELABEL(kt6368a));
 
     int ret;
     int state = 0;
@@ -101,7 +107,79 @@ int main(void)
     if (!device_is_ready(trh_dev)) {
         printk("trh device not ready\r\n");
         return 0;
-    }    
+    }
+
+    if (!device_is_ready(baro_dev)) {
+        printk("baro device not ready\r\n");
+        return 0;
+    }
+
+    /* Counterfeit BMP280: its pressure path has no factory trim and
+     * reads a constant ~11.6kPa high. Single-point calibrated here
+     * against the local reference (1014 hPa sea-level, first floor):
+     * 101400 Pa - ~112970 Pa raw reading. */
+    baro_set_offset(baro_dev, 101400.0f - 112970.0f);
+
+    // Bluetooth: AT commands only work while no peer is connected,
+    // so read the identity right after boot
+    if (!device_is_ready(bt_dev)) {
+        printk("bt device not ready\r\n");
+        return 0;
+    }
+    if (bt_ping(bt_dev) == 0) {
+        char bt_info[48];
+        if (bt_get_name(bt_dev, bt_info, sizeof(bt_info)) > 0) {
+            printk("bt name: %s\r\n", bt_info);
+        }
+        if (bt_get_mac(bt_dev, bt_info, sizeof(bt_info)) > 0) {
+            printk("bt mac: %s\r\n", bt_info);
+        }
+        if (bt_get_version(bt_dev, bt_info, sizeof(bt_info)) > 0) {
+            printk("bt version: %s\r\n", bt_info);
+        }
+    } else {
+        printk("bt ping failed, check wiring or connection state\r\n");
+    }
+
+    // SD card: mount FAT filesystem from the SDMMC disk ("SD:"), files
+    // are then opened with paths like "/SD:/test.txt". fs_data is the
+    // FATFS work area, f_mount registers it into the volume table;
+    // leaving it NULL fails the mount with FR_NOT_ENABLED (-19).
+    static FATFS fat_fs;
+    static struct fs_mount_t sd_mnt = {
+        .type = FS_FATFS,
+        .fs_data = &fat_fs,
+        .mnt_point = "/SD:",
+    };
+    ret = fs_mount(&sd_mnt);
+    if (ret == 0) {
+        struct fs_statvfs sfs;
+        struct fs_dir_t dir;
+        struct fs_dirent ent;
+
+        if (fs_statvfs("/SD:", &sfs) == 0) {
+            printk("sd mounted, %u MiB free\r\n",
+                   (uint32_t)((uint64_t)sfs.f_bfree * sfs.f_frsize >> 20));
+        } else {
+            printk("sd mounted\r\n");
+        }
+
+        // List the root directory: these are the same files the PC
+        // sees, the mount is the card's own FAT volume
+        fs_dir_t_init(&dir);
+        if (fs_opendir(&dir, "/SD:") == 0) {
+            while (fs_readdir(&dir, &ent) == 0 && ent.name[0] != '\0') {
+                printk("%c %8u  %s\r\n",
+                       ent.type == FS_DIR_ENTRY_DIR ? 'd' : '-',
+                       ent.size, ent.name);
+            }
+            fs_closedir(&dir);
+        } else {
+            printk("sd opendir failed\r\n");
+        }
+    } else {
+        printk("sd mount failed: %d (no card inserted?)\r\n", ret);
+    }
 
     // Init the attitude filter: Mahony complementary filter, accel
     // magnitude outside 1g +/- 30% counts as an invalid sample
@@ -201,7 +279,8 @@ int main(void)
     while (1) {
         // Change the state of the pin and print
         state = !state;
-        printk("LED state: %d\r\n", state);
+        // TEMP DEBUG: silenced for bt bring-up
+        // printk("LED state: %d\r\n", state);
 
         cfb_framebuffer_clear(display, false);
         cfb_print(display, "Hello Zephyr", 0, 0);
@@ -244,11 +323,12 @@ int main(void)
 
             /* Debug: raw sensor frames every 10 loops, used to align
              * axis conventions and find the mag hard-iron offset */
-            if ((loop_count % 10) == 0) {
-                printk("raw acc: %d %d %d | mag: %d %d %d\r\n",
-                       acc[0], acc[1], acc[2],
-                       mag_raw[0], mag_raw[1], mag_raw[2]);
-            }
+            // TEMP DEBUG: silenced for bt bring-up
+            // if ((loop_count % 10) == 0) {
+            //     printk("raw acc: %d %d %d | mag: %d %d %d\r\n",
+            //            acc[0], acc[1], acc[2],
+            //            mag_raw[0], mag_raw[1], mag_raw[2]);
+            // }
 
             float dt = (float)k_uptime_delta(&attitude_last_ms) / 1000.0f;
             if (have_mag) {
@@ -257,10 +337,11 @@ int main(void)
                 ret = attitude_update(gyro_radps, accel_g, dt);
             }
             if (ret == 0) {
-                float roll, pitch, yaw;
-                attitude_get_euler(&roll, &pitch, &yaw);
-                printk("attitude: roll=%.2f pitch=%.2f yaw=%.2f deg\r\n",
-                       roll, pitch, yaw);
+                // TEMP DEBUG: silenced for bt bring-up
+                // float roll, pitch, yaw;
+                // attitude_get_euler(&roll, &pitch, &yaw);
+                // printk("attitude: roll=%.2f pitch=%.2f yaw=%.2f deg\r\n",
+                //        roll, pitch, yaw);
                 if (attitude_get_reject_count() != 0) {
                     printk("accel invalid samples: %u\r\n",
                            attitude_get_reject_count());
@@ -273,8 +354,8 @@ int main(void)
                 printk("attitude update rejected: %d\r\n", ret);
             }
 
-            printk("temp: %d.%02d C\r\n", temp_raw / 340 + 36,
-                   (temp_raw % 340) * 100 / 340);
+            // TEMP DEBUG: silenced for bt bring-up
+            // printk("temp: %.2f C\r\n", temp_raw / 340.0f + 36.53f);
         } else {
             printk("gyro read failed: %d\r\n", ret);
         }
@@ -290,9 +371,10 @@ int main(void)
         }
 
         // Every 10 loops, dump the whole log history from flash
-        if ((loop_count % 10) == 9) {
-            flash_log_dump(flash);
-        }
+        // TEMP DEBUG: silenced for bt bring-up
+        // if ((loop_count % 10) == 9) {
+        //     flash_log_dump(flash);
+        // }
         loop_count++;
 
         float temp, hum_pct;
@@ -300,7 +382,47 @@ int main(void)
         if (ret < 0) {
             printk("trh read failed: %d\r\n", ret);
         } else {
-            printk("trh temp is %.2f, hum_pct is %.2f\r\n", temp, hum_pct);
+            // TEMP DEBUG: silenced for bt bring-up
+            // printk("trh temp is %.2f, hum_pct is %.2f\r\n", temp, hum_pct);
+        }
+
+        /* Barometer: forced-mode measure + poll takes ~10ms on the
+         * bit-bang I2C, outputs are already in Pa and degC */
+        float press_pa, baro_temp;
+        ret = baro_get_all(baro_dev, &press_pa, &baro_temp);
+        if (ret < 0) {
+            printk("baro read failed: %d\r\n", ret);
+        } else {
+            // TEMP DEBUG: silenced for bt bring-up
+            // printk("baro pressure is %.1f Pa, temp is %.2f C\r\n",
+            //        press_pa, baro_temp);
+        }
+
+        /* Bluetooth: report link state changes, echo anything the
+         * peer sends and push a heartbeat every 100 loops */
+        static bool bt_link_last = false;
+        bool bt_link = false;
+        if (bt_connected(bt_dev, &bt_link) == 0
+            && bt_link != bt_link_last) {
+            printk("bluetooth %s\r\n",
+                   bt_link ? "connected" : "disconnected");
+            bt_link_last = bt_link;
+        }
+
+        if (bt_link) {
+            uint8_t bt_rx[256];
+            int rx_len = bt_recv(bt_dev, bt_rx, sizeof(bt_rx), 2);
+            if (rx_len > 0) {
+                printk("bt rx: %.*s\r\n", rx_len, bt_rx);
+                bt_send(bt_dev, bt_rx, rx_len);     /* echo back */
+            }
+            if ((loop_count % 100) == 0) {
+                char bt_tx[48];
+                int tx_len = snprintf(bt_tx, sizeof(bt_tx),
+                                      "hello from f401, loop %d",
+                                      loop_count);
+                bt_send(bt_dev, bt_tx, tx_len);
+            }
         }
 
         // Sleep
